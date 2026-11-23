@@ -189,9 +189,14 @@
     return 'past';
   }
 
-  // Turn "Raghu 99080 76230 · Aravind 97048 72506" into tap-to-call links
-  function contactHtml(text) {
-    return esc(text).replace(/(\+?\d[\d\s-]{8,14}\d)/g, (num) => `<a href="tel:${num.replace(/[^\d+]/g, '').replace(/^(\d{10})$/, '+91$1')}">${num}</a>`);
+  // Turn "Raghu 99080 76230 · Aravind 97048 72506" into WhatsApp chat links
+  function contactHtml(text, title) {
+    const msg = encodeURIComponent(`Hi! I'd like to register a team for ${title || "the tournament"} at BAIL'S Cricket Ground.`);
+    return esc(text).replace(/(\+?\d[\d\s-]{8,14}\d)/g, (num) => {
+      const digits = num.replace(/\D/g, '');
+      const wa = digits.length === 10 ? `91${digits}` : digits;
+      return `<a href="https://wa.me/${wa}?text=${msg}" target="_blank" rel="noopener" title="WhatsApp ${num}">${num}</a>`;
+    });
   }
 
   const posters = ['/assets/img/hills-match.jpg', '/assets/img/outfield-lush.jpg', '/assets/img/trophies-golden.jpg', '/assets/img/pavilion-team.jpg'];
@@ -231,7 +236,7 @@
           ${highlights.length ? `<ul class="spot__list">${highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
           <div class="spot__facts">
             ${t.fee ? `<div><small>Entry fee</small><b>${esc(t.fee)}</b></div>` : ''}
-            ${t.contact ? `<div><small>Registrations</small><b>${contactHtml(t.contact)}</b></div>` : ''}
+            ${t.contact ? `<div><small>Registrations</small><b>${contactHtml(t.contact, t.title.replace(/\s*·\s*/g, ' '))}</b></div>` : ''}
           </div>
           ${link}
         </div>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin | BAIL'S Cricket Ground</title>
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/calendar.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <!-- Login -->
+  <main class="login" id="loginView" hidden>
+    <form class="login__card" id="loginForm">
+      <img src="/assets/img/logo-256.png" alt="" width="84" height="84">
+      <h1>Admin sign in</h1>
+      <p>BAIL'S Cricket Ground</p>
+      <label>Username<input name="username" autocomplete="username" required value="admin"></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <p class="error" id="loginError" role="alert"></p>
+      <button class="btn btn--primary" type="submit">Sign in</button>
+      <a href="/" class="back">← Back to website</a>
+    </form>
+  </main>
+
+  <!-- App -->
+  <div class="app" id="appView" hidden>
+    <header class="topbar">
+      <a href="/" class="topbar__brand"><img src="/assets/img/logo-256.png" alt="" width="36" height="36"><span>BAIL'S Admin</span></a>
+      <nav class="tabs" id="tabs" role="tablist">
+        <button role="tab" data-tab="calendar" class="is-active">🗓️ Calendar</button>
+        <button role="tab" data-tab="events">📅 Events &amp; Fixtures</button>
+        <button role="tab" data-tab="honours">🏆 Honour Board</button>
+        <button role="tab" data-tab="media">🖼️ Gallery &amp; Videos</button>
+        <button role="tab" data-tab="instagram">📸 Instagram</button>
+        <button role="tab" data-tab="settings">⚙️ Settings</button>
+      </nav>
+      <div class="topbar__right">
+        <a href="/" target="_blank" class="btn btn--ghost btn--sm">View site ↗</a>
+        <button class="btn btn--ghost btn--sm" id="logout">Sign out</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="panel" id="panel">
+        <div class="panel__form">
+          <h2 id="formTitle">Add entry</h2>
+          <p class="hint" id="formHint"></p>
+          <form id="editor" novalidate></form>
+        </div>
+        <div class="panel__list">
+          <div class="list__head">
+            <h2 id="listTitle">Entries</h2>
+            <input type="search" id="listSearch" placeholder="Filter…">
+          </div>
+          <div id="list"></div>
+        </div>
+      </section>
+
+      <section class="calpanel" id="calPanel" hidden>
+        <div class="calpanel__main">
+          <div class="calpanel__head">
+            <div>
+              <h2>Ground calendar</h2>
+              <p class="hint">Pick a day to add or delete fixtures and to block or free its three slots: Slot 1 (7:00 – 10:30 AM), Slot 2 (10:45 AM – 2:15 PM) and Slot 3 (2:30 – 6:00 PM). A fixture takes the slot its start time falls in.</p>
+            </div>
+            <div class="calnav">
+              <button class="btn btn--ghost btn--sm" id="aCalPrev" type="button" aria-label="Previous month">‹</button>
+              <b id="aCalMonth"></b>
+              <button class="btn btn--ghost btn--sm" id="aCalNext" type="button" aria-label="Next month">›</button>
+              <button class="btn btn--ghost btn--sm" id="aCalToday" type="button">Today</button>
+            </div>
+          </div>
+          <div class="cal-legend" id="aCalLegend"></div>
+          <div class="cal-grid" id="aCalGrid"></div>
+          <h3 class="upcoming__title">Upcoming blocked slots</h3>
+          <div id="aUpcoming"></div>
+        </div>
+        <aside class="calpanel__day" id="aDay"></aside>
+      </section>
+
+      <section class="panel panel--single" id="settingsPanel" hidden>
+        <div class="panel__form">
+          <h2>Site settings</h2>
+          <p class="hint">Contact numbers, social links and the announcement bar on the home page.</p>
+          <form id="settingsForm" novalidate></form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/js/cal-core.js" defer></script>
+  <script src="/admin/admin.js" defer></script>
+</body>
+</html>

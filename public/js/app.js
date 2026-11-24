@@ -377,6 +377,48 @@
     $('#calPrev').onclick = () => { cal.m -= 1; if (cal.m < 0) { cal.m = 11; cal.y -= 1; } drawMonth(); };
     $('#calNext').onclick = () => { cal.m += 1; if (cal.m > 11) { cal.m = 0; cal.y += 1; } drawMonth(); };
     drawMonth();
+    renderWeek();
+  }
+
+  // ------------------------------------------------------------ open slots, next 7 days
+  function renderWeek() {
+    const today = BailsCal.todayIST();
+    const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(`${today}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const html = days.map((date, i) => {
+      const taken = BailsCal.slotsTaken(cal.map.get(date) || []);
+      // today: slots that have already started can't be booked
+      const open = BailsCal.SLOTS.filter((s) => !taken[s.id] && !(i === 0 && s.start <= nowHM));
+      const dt = new Date(`${date}T12:00:00Z`);
+      const wd = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dt.toLocaleString('en-IN', { weekday: 'short', timeZone: 'UTC' });
+      const dm = dt.toLocaleString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+      return `<div class="wday ${open.length ? '' : 'is-full'}">
+        <div class="wday__date"><b>${esc(wd)}</b><span>${esc(dm)}</span></div>
+        <div class="wday__slots">
+          ${open.length
+            ? open.map((s) => `<button type="button" class="wslot" data-date="${date}" data-slot="${s.id}" title="${esc(`${s.name}, ${s.time}`)}"><span>${esc(BailsCal.time12(s.start))}</span><small>${esc(s.name)}</small></button>`).join('')
+            : `<span class="wday__none">${i === 0 && BailsCal.SLOTS.some((s) => !taken[s.id]) ? 'No more slots today' : 'Fully booked'}</span>`}
+        </div>
+      </div>`;
+    }).join('');
+    $('#weekDays').innerHTML = html;
+    $('#openSlots').hidden = false;
+    $('#weekDays').onclick = (e) => {
+      const b = e.target.closest('.wslot'); if (!b) return;
+      const [y, m] = b.dataset.date.split('-').map(Number);
+      if (cal.isAdmin || !siteData?.settings?.whatsapp) {
+        // admins (or no WhatsApp number): jump to that day on the calendar
+        cal.y = y; cal.m = m - 1; cal.selected = b.dataset.date; drawMonth();
+        $('#calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      openEnquiry(b.dataset.date, [b.dataset.slot]);
+    };
   }
   function drawMonth() {
     const today = BailsCal.todayIST();

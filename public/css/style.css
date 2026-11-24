@@ -592,3 +592,26 @@ p { margin: 0 0 1em; }
 .enq__actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .enq__actions .btn--ghost { color: var(--ink); border-color: var(--line); }
 #enqGo.is-disabled { opacity: .5; }
+
+/* ---------- Open slots: next 7 days ---------- */
+.week { background: var(--green-900); color: #fff; padding: 34px 0 30px; border-bottom: 1px solid rgba(246, 220, 140, .15); }
+.week .kicker { color: var(--gold-hi); }
+.week__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.week__title { font-family: var(--font-display); font-size: clamp(1.4rem, 2.6vw, 1.9rem); margin-top: 4px; }
+.week__more { display: inline-flex; align-items: center; gap: 8px; color: var(--gold-hi); font-weight: 600; text-decoration: none; }
+.week__more:hover { text-decoration: underline; }
+.week__days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+.wday { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); min-width: 0; }
+.wday.is-full { opacity: .6; }
+.wday__date b { display: block; font-family: var(--font-display); font-size: 1.05rem; }
+.wday__date span { font-size: .8rem; opacity: .7; }
+.wday__slots { display: grid; gap: 6px; }
+.wslot { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; width: 100%; padding: 8px 10px; border-radius: 8px; border: 0; background: #23935a; color: #fff; font-weight: 700; font-size: .85rem; text-align: left; transition: filter .15s, transform .15s; }
+.wslot:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.wslot small { font-weight: 500; font-size: .7rem; opacity: .85; }
+.wday__none { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(200, 55, 47, .25); color: #ffb3ad; font-size: .8rem; font-weight: 600; }
+.week__hint { margin: 14px 0 0; font-size: .85rem; opacity: .65; }
+@media (max-width: 1000px) {
+  .week__days { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(150px, 42%); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
+  .wday { scroll-snap-align: start; }
+}

@@ -224,7 +224,7 @@
           ${t.format ? `<span><svg><use href="#i-ball"/></svg>${esc(t.format)}</span>` : ''}
           ${t.round ? `<span><svg><use href="#i-trophy"/></svg>${esc(t.round)}</span>` : ''}
           ${count ? `<span><svg><use href="#i-pitch"/></svg>${count} fixture${count > 1 ? 's' : ''} at Bails</span>` : ''}`;
-    const link = t.link ? `<a class="tourney__link" href="${esc(t.link)}" target="_blank" rel="noopener">Details &amp; live scores<svg><use href="#i-arrow"/></svg></a>` : '';
+    const link = t.link ? `<a class="tourney__link" href="${esc(t.link)}" target="_blank" rel="noopener noreferrer">Details &amp; live scores<svg><use href="#i-arrow"/></svg></a>` : '';
     const tagHtml = `<span class="tourney__tag ${t.status === 'live' ? 'is-live' : t.status === 'past' ? 'is-past' : ''}">${tag}</span>`;
 
     // Spotlight layout: a tournament with a flyer or bracket gets a full-width card
@@ -654,7 +654,7 @@
         <div class="gold-text hd__fig">${isC ? `${h.runs}${h.notOut ? '*' : ''}` : `${h.wickets}/${h.runsConceded}`}</div>
         <div class="hd__name">${esc(h.player)}</div>
         <dl>${rowsHtml}</dl>
-        ${h.link ? `<p style="margin-top:16px"><a href="${esc(h.link)}" target="_blank" rel="noopener">View scorecard →</a></p>` : ''}
+        ${h.link ? `<p style="margin-top:16px"><a href="${esc(h.link)}" target="_blank" rel="noopener noreferrer">View scorecard →</a></p>` : ''}
       </div>`;
       $('#honourDialog').showModal();
     };

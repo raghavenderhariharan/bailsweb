@@ -58,6 +58,12 @@ async function applySeedUpdates() {
     db.applied.push('blocks-nov-2026');
     changed = true;
   }
+  if (!db.applied.includes('hide-bcl-announcement')) {
+    // Remove the Bails Cricket League announcement bar (cleared only if it is still that text)
+    if (/^Bails Cricket League Season 1/i.test(db.settings.announcement || '') || /^BAIL['’]?S Cricket League Season 1/i.test(db.settings.announcement || '')) db.settings.announcement = '';
+    db.applied.push('hide-bcl-announcement');
+    changed = true;
+  }
   if (!db.applied.includes('rename-bails')) {
     // "BAIL'S" / "Bail's" -> "BAILS" / "Bails" in saved text (settings, events, captions, labels)
     const fix = (v) => v.replace(/BAIL['’]S/g, 'BAILS').replace(/bail['’]s/gi, 'Bails');

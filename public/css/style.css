@@ -615,3 +615,10 @@ p { margin: 0 0 1em; }
   .week__days { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(150px, 42%); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
   .wday { scroll-snap-align: start; }
 }
+
+/* Google + CricHeroes ratings side by side */
+.hero__rating { flex-wrap: wrap; }
+.hero__rating-sep { width: 1px; height: 16px; background: rgba(255, 255, 255, .35); }
+.score { flex-wrap: wrap; }
+.score__sep { width: 1px; align-self: stretch; min-height: 48px; background: var(--line); margin: 0 6px; }
+a.score__meta { color: inherit; }

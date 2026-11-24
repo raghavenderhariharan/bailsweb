@@ -478,6 +478,22 @@
     <form method="dialog"><button class="btn btn--ghost">Close</button></form>
   </dialog>
 
+  <!-- Booking enquiry: confirm the date and slots before opening WhatsApp -->
+  <dialog class="enquiry-dialog" id="enquiryDialog" aria-labelledby="enqTitle">
+    <form method="dialog" class="enq">
+      <p class="enq__kicker">Booking enquiry</p>
+      <h3 id="enqTitle"></h3>
+      <p class="enq__sub">Choose the slots you'd like to ask about. We'll open WhatsApp with your message ready to send.</p>
+      <div class="enq__options" id="enqOptions"></div>
+      <div class="enq__preview"><small>Your message</small><p id="enqMsg"></p></div>
+      <p class="enq__err" id="enqErr" role="alert"></p>
+      <div class="enq__actions">
+        <a class="btn btn--gold" id="enqGo" href="#" target="_blank" rel="noopener"><svg><use href="#i-whatsapp"/></svg>Confirm &amp; open WhatsApp</a>
+        <button class="btn btn--ghost" value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- Admin: quick-add fixture (only shown when signed in) -->
   <dialog class="fixture-dialog" id="fixtureDialog">
     <form id="fixtureForm">

@@ -399,16 +399,75 @@
       if (!day) return;
       const date = day.dataset.date;
       const chip = e.target.closest('.chip-b.is-open');
-      const open = BailsCal.SLOTS.filter((s) => !BailsCal.slotsTaken(cal.map.get(date) || [])[s.id]);
-      const url = date >= BailsCal.todayIST() && !cal.isAdmin
-        ? enquiryUrl(date, chip ? BailsCal.SLOTS.filter((s) => s.id === chip.dataset.slot) : open)
-        : null;
+      const taken = BailsCal.slotsTaken(cal.map.get(date) || []);
+      const anyOpen = BailsCal.SLOTS.some((s) => !taken[s.id]);
       selectOnly(e);
-      if (url) window.open(url, '_blank', 'noopener');
+      if (date >= BailsCal.todayIST() && !cal.isAdmin && anyOpen && siteData?.settings?.whatsapp) {
+        openEnquiry(date, chip ? [chip.dataset.slot] : null);
+      }
     };
     $('#calStats').innerHTML = BailsCal.statsHtml(BailsCal.monthStats(cal.y, cal.m, cal.map));
     drawDay();
   }
+  // ---- booking enquiry dialog
+  const enq = { date: null, taken: {} };
+  function openEnquiry(date, preselect) {
+    enq.date = date;
+    enq.taken = BailsCal.slotsTaken(cal.map.get(date) || []);
+    const open = BailsCal.SLOTS.filter((s) => !enq.taken[s.id]);
+    const pre = new Set(preselect || open.map((s) => s.id));
+    const fullOpen = open.length === BailsCal.SLOTS.length;
+    $('#enqTitle').textContent = BailsCal.dayLabel(date);
+    $('#enqOptions').innerHTML = `
+      <label class="enq__opt enq__opt--full ${fullOpen ? '' : 'is-taken'}">
+        <input type="checkbox" value="full" ${fullOpen ? '' : 'disabled'} ${fullOpen && !preselect ? 'checked' : ''}>
+        <span><b>Full day</b><small>7:00 AM – 6:00 PM · all three slots</small></span>
+        <em>${fullOpen ? 'Open' : 'Not available'}</em>
+      </label>
+      ${BailsCal.SLOTS.map((s) => {
+        const it = enq.taken[s.id];
+        return `<label class="enq__opt ${it ? 'is-taken' : ''}">
+          <input type="checkbox" value="${s.id}" ${it ? 'disabled' : ''} ${!it && pre.has(s.id) ? 'checked' : ''}>
+          <span><b>${s.name}</b><small>${s.time}</small></span>
+          <em>${it ? 'Booked' : 'Open'}</em>
+        </label>`;
+      }).join('')}`;
+    syncFull();
+    updateEnquiry();
+    $('#enquiryDialog').showModal();
+  }
+  function enqBoxes() { return $$('#enqOptions input'); }
+  function syncFull(changed) {
+    const boxes = enqBoxes();
+    const full = boxes.find((b) => b.value === 'full');
+    const slots = boxes.filter((b) => b.value !== 'full' && !b.disabled);
+    if (full.disabled) return;
+    if (changed === full) slots.forEach((b) => { b.checked = full.checked; });
+    else full.checked = slots.length === BailsCal.SLOTS.length && slots.every((b) => b.checked);
+  }
+  function enquiryText() {
+    const boxes = enqBoxes();
+    const full = boxes.find((b) => b.value === 'full');
+    const picked = BailsCal.SLOTS.filter((s) => boxes.find((b) => b.value === s.id)?.checked);
+    if (!picked.length) return null;
+    const what = full.checked ? 'the full day (7:00 AM – 6:00 PM)' : picked.map((s) => `${s.name} (${s.time})`).join(', ');
+    return `Hi BAIL'S Cricket Ground! I am enquiring for ${BailsCal.dayLabel(enq.date)}, ${what}. Is it available to book?`;
+  }
+  function updateEnquiry() {
+    const msg = enquiryText();
+    const go = $('#enqGo');
+    $('#enqMsg').textContent = msg || 'Pick at least one slot.';
+    $('#enqErr').textContent = '';
+    go.classList.toggle('is-disabled', !msg);
+    go.href = msg ? `https://wa.me/${siteData.settings.whatsapp}?text=${encodeURIComponent(msg)}` : '#';
+  }
+  $('#enqOptions').addEventListener('change', (e) => { syncFull(e.target); updateEnquiry(); });
+  $('#enqGo').addEventListener('click', (e) => {
+    if (!enquiryText()) { e.preventDefault(); $('#enqErr').textContent = 'Pick at least one slot first.'; return; }
+    setTimeout(() => $('#enquiryDialog').close(), 100);
+  });
+  $('#enquiryDialog').addEventListener('click', (e) => { if (e.target.id === 'enquiryDialog') e.target.close(); });
+
   /** WhatsApp link: "I am enquiring for <date>, <slot(s)>" */
   function enquiryUrl(date, slots) {
     const wa = siteData?.settings?.whatsapp;

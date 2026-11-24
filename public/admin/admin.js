@@ -1,4 +1,4 @@
-/* BAIL'S Cricket Ground: admin panel */
+/* BAILS Cricket Ground: admin panel */
 (() => {
   'use strict';
   const $ = (s, el = document) => el.querySelector(s);

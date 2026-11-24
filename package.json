@@ -1,7 +1,7 @@
 {
   "name": "bails-cricket-ground",
   "version": "1.0.0",
-  "description": "Website for BAIL'S Cricket Ground, Rampally (Keesara), Hyderabad: events, honour board, amenities, gallery and admin panel.",
+  "description": "Website for BAILS Cricket Ground, Rampally (Keesara), Hyderabad: events, honour board, amenities, gallery and admin panel.",
   "type": "module",
   "private": true,
   "main": "server.js",

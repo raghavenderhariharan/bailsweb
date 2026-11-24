@@ -1,4 +1,4 @@
-/* BAIL'S Cricket Ground: shared month-calendar logic (public site + admin) */
+/* BAILS Cricket Ground: shared month-calendar logic (public site + admin) */
 (() => {
   'use strict';
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

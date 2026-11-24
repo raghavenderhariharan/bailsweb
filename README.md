@@ -1,6 +1,6 @@
-# BAIL'S Cricket Ground: website
+# BAILS Cricket Ground: website
 
-Website for **BAIL'S Cricket Ground**, 642/2 Dayara, Rampally Village, Keesara, Hyderabad, Telangana 501302.
+Website for **BAILS Cricket Ground**, 642/2 Dayara, Rampally Village, Keesara, Hyderabad, Telangana 501302.
 
 It has a scenic home page with a photo slideshow, amenities, the **Bails Cricket League** and other tournaments, upcoming fixtures with a countdown, a monthly **ground calendar** with three slots a day, a gold-lettered **honour board** for centuries and five-wicket hauls, a gallery with a video playlist, Google reviews, Instagram, WhatsApp and GW Sports booking links, and a map. A password-protected **admin panel** at `/admin` manages all of the changing content.
 
@@ -58,7 +58,7 @@ Serve it over HTTPS. The session cookie is marked `Secure` automatically behind 
 
 - **Google Maps listing:** address, plus code, hours (7 AM – 6 PM daily), rating (4.7★, 111 reviews), review quotes, accessibility details and 10 photos.
 - **CricHeroes ground page:** facilities list, 4.9/5 rating, 13 photos including the crest, and the upcoming fixtures (Elite Corporate League S17 and Octa Legends Championship S2).
-- **Instagram:** [@bailscricket](https://www.instagram.com/bailscricket/), "BAIL's Cricket Ground", whose bio supplies the tagline "Our Own 'Dharamshala'".
+- **Instagram:** [@bailscricket](https://www.instagram.com/bailscricket/), "Bails Cricket Ground", whose bio supplies the tagline "Our Own 'Dharamshala'".
 - **Booking numbers:** from the "For Bookings" board at the ground (photo on CricHeroes). Contact people and the WhatsApp booking number (Raghu, 99080 76230) came from the ground team.
 - **Honour board:** 87 centuries and 62 five-wicket hauls from the CricHeroes scorecards of the 748 scored matches played at Bails between 23 Nov 2024 and 22 Nov 2026. Each entry links to its scorecard. Player names are as entered by the scorers on CricHeroes.
 - **Bails Cricket League Season 1:** details and posters supplied by the ground (`assets/img/bcl-*.jpg`).

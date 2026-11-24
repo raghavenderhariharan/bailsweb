@@ -1,4 +1,4 @@
-/* BAIL'S Cricket Ground: front-end */
+/* BAILS Cricket Ground: front-end */
 (() => {
   'use strict';
   const $ = (s, el = document) => el.querySelector(s);
@@ -135,7 +135,7 @@
 
   // ------------------------------------------------------------ settings
   function applySettings(s) {
-    const wa = s.whatsapp ? `https://wa.me/${s.whatsapp}?text=${encodeURIComponent("Hi BAIL'S Cricket Ground! I'd like to enquire about booking the ground.")}` : null;
+    const wa = s.whatsapp ? `https://wa.me/${s.whatsapp}?text=${encodeURIComponent("Hi BAILS Cricket Ground! I'd like to enquire about booking the ground.")}` : null;
     if (s.gwSportsUrl) {
       $$('[data-gw]').forEach((a) => { a.href = s.gwSportsUrl; a.hidden = false; });
       $$('[data-gw-item]').forEach((el) => { el.hidden = false; });
@@ -196,7 +196,7 @@
 
   // Turn "Raghu 99080 76230 · Aravind 97048 72506" into WhatsApp chat links
   function contactHtml(text, title) {
-    const msg = encodeURIComponent(`Hi! I'd like to register a team for ${title || "the tournament"} at BAIL'S Cricket Ground.`);
+    const msg = encodeURIComponent(`Hi! I'd like to register a team for ${title || "the tournament"} at BAILS Cricket Ground.`);
     return esc(text).replace(/(\+?\d[\d\s-]{8,14}\d)/g, (num) => {
       const digits = num.replace(/\D/g, '');
       const wa = digits.length === 10 ? `91${digits}` : digits;
@@ -493,7 +493,7 @@
     const picked = BailsCal.SLOTS.filter((s) => boxes.find((b) => b.value === s.id)?.checked);
     if (!picked.length) return null;
     const what = full.checked ? 'the full day (7:00 AM – 6:00 PM)' : picked.map((s) => `${s.name} (${s.time})`).join(', ');
-    return `Hi BAIL'S Cricket Ground! I am enquiring for ${BailsCal.dayLabel(enq.date)}, ${what}. Is it available to book?`;
+    return `Hi BAILS Cricket Ground! I am enquiring for ${BailsCal.dayLabel(enq.date)}, ${what}. Is it available to book?`;
   }
   function updateEnquiry() {
     const msg = enquiryText();
@@ -517,7 +517,7 @@
     const slotText = slots.length === 1
       ? `${slots[0].name} (${slots[0].time})`
       : `any of these open slots: ${slots.map((s) => `${s.name} (${s.time})`).join(', ')}`;
-    const msg = `Hi BAIL'S Cricket Ground! I am enquiring for ${BailsCal.dayLabel(date)}, ${slotText}. Is it available to book?`;
+    const msg = `Hi BAILS Cricket Ground! I am enquiring for ${BailsCal.dayLabel(date)}, ${slotText}. Is it available to book?`;
     return `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
   }
 

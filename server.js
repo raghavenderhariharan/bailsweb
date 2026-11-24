@@ -1,4 +1,4 @@
-// BAIL'S Cricket Ground: website + admin API
+// BAILS Cricket Ground: website + admin API
 // Storage: a single JSON file (data/db.json), seeded from data/seed.json on first run.
 import express from 'express';
 import multer from 'multer';
@@ -56,6 +56,20 @@ async function applySeedUpdates() {
       try { validateBooking(b); db.bookings.push(b); } catch { /* slot already taken: keep the existing entry */ }
     }
     db.applied.push('blocks-nov-2026');
+    changed = true;
+  }
+  if (!db.applied.includes('rename-bails')) {
+    // "BAIL'S" / "Bail's" -> "BAILS" / "Bails" in saved text (settings, events, captions, labels)
+    const fix = (v) => v.replace(/BAIL['’]S/g, 'BAILS').replace(/bail['’]s/gi, 'Bails');
+    const walk = (o) => {
+      for (const [k, v] of Object.entries(o)) {
+        if (typeof v === 'string') o[k] = fix(v);
+        else if (v && typeof v === 'object') walk(v);
+      }
+    };
+    walk(db.settings);
+    for (const k of ['events', 'media', 'instagram', 'bookings']) db[k].forEach(walk);
+    db.applied.push('rename-bails');
     changed = true;
   }
   if (!db.applied.includes('ground-phones-tbd')) {
@@ -554,4 +568,4 @@ const autoSync = () => { if (db.settings.cricheroesAuto !== false) syncCricHeroe
 setTimeout(autoSync, 30 * 1000).unref();
 setInterval(autoSync, SYNC_HOURS * 3600 * 1000).unref();
 if (!fss.existsSync(path.join(__dirname, 'public', 'index.html'))) console.warn('public/index.html missing');
-app.listen(PORT, () => console.log(`BAIL'S Cricket Ground site running at http://localhost:${PORT}  (admin: /admin)`));
+app.listen(PORT, () => console.log(`BAILS Cricket Ground site running at http://localhost:${PORT}  (admin: /admin)`));

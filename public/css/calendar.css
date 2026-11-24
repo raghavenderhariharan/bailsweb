@@ -1,4 +1,4 @@
-/* BAIL'S Cricket Ground: month calendar (shared by the site and the admin panel) */
+/* BAILS Cricket Ground: month calendar (shared by the site and the admin panel) */
 .cal-grid {
   --cal-cell: #fff; --cal-cell-hover: #f3f7f4; --cal-line: #e3e6e1; --cal-fg: #14241b; --cal-muted: #6b7a72;
   --cal-sel: #d4a63a; --cal-red: #c8372f; --cal-red-bg: #fbecea; --cal-red-line: #efc4bf; --cal-green: #23935a; --cal-today: #1f6b45;

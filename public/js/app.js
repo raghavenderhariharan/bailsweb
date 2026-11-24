@@ -142,6 +142,11 @@
     }
     if (wa) $$('[data-wa]').forEach((a) => { a.href = wa; a.target = '_blank'; a.rel = 'noopener'; });
     const phones = [s.phone1, s.phone2].filter(Boolean);
+    if (!phones.length) {
+      $('#phones').textContent = 'TBD';
+      const first = parseContacts(s.contacts)[0];
+      if (first) $$('[data-tel]').forEach((a) => { a.href = `tel:${first.tel}`; });
+    }
     if (phones.length) {
       const tel = (p) => `tel:${p.replace(/[^\d+]/g, '')}`;
       $('#phones').innerHTML = phones.map((p) => `<a href="${esc(tel(p))}">${esc(p)}</a>`).join(' · ');

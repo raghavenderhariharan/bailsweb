@@ -58,6 +58,12 @@ async function applySeedUpdates() {
     db.applied.push('blocks-nov-2026');
     changed = true;
   }
+  if (!db.applied.includes('ground-phones-tbd')) {
+    const OLD = ['+91 90325 99139', '+91 98851 23630'];
+    for (const k of ['phone1', 'phone2']) if (OLD.includes(db.settings[k])) db.settings[k] = '';
+    db.applied.push('ground-phones-tbd');
+    changed = true;
+  }
   if (changed) await saveDb();
 }
 

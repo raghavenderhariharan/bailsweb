@@ -136,9 +136,9 @@
 
   const SETTINGS_FIELDS = [
     { name: 'announcement', label: 'Announcement bar', hint: 'Shown under the hero. Leave blank to hide.' },
-    [{ name: 'phone1', label: 'Phone 1' }, { name: 'phone2', label: 'Phone 2' }],
+    [{ name: 'phone1', label: 'Ground phone 1', hint: 'Leave both blank to show "TBD"' }, { name: 'phone2', label: 'Ground phone 2' }],
     { name: 'contacts', label: 'Contact people', type: 'textarea', hint: 'One per line, as "Name - number". Shown under "Contact us" with tap-to-call links.' },
-    { name: 'whatsapp', label: 'WhatsApp number', hint: 'Digits only, with country code, e.g. 919032599139' },
+    { name: 'whatsapp', label: 'WhatsApp number', hint: 'Digits only, with country code, e.g. 919908076230' },
     { name: 'bookingNote', label: 'Booking note', type: 'textarea' },
     { name: 'instagramUrl', label: 'Instagram URL' },
     { name: 'facebookUrl', label: 'Facebook page URL', hint: 'Leave blank to hide the Facebook button' },

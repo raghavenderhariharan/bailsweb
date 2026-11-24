@@ -89,9 +89,9 @@
       </a>
       <nav class="nav__links" id="navLinks" aria-label="Main">
         <a href="#ground">The Ground</a>
+        <a href="#calendar">Calendar</a>
         <a href="#amenities">Amenities</a>
         <a href="#events">Fixtures</a>
-        <a href="#calendar">Calendar</a>
         <a href="#honours">Honour Board</a>
         <a href="#gallery">Gallery</a>
         <a href="#reviews">Reviews</a>
@@ -139,24 +139,51 @@
     <div class="hero__dots" id="heroDots" aria-hidden="true"></div>
   </section>
 
-  <!-- ============ OPEN SLOTS: NEXT 7 DAYS ============ -->
-  <section class="week" id="openSlots" aria-labelledby="weekTitle" hidden>
-    <div class="wrap">
-      <div class="week__head">
-        <div>
-          <p class="kicker">Book a slot</p>
-          <h2 class="week__title" id="weekTitle">Open slots in the next 7 days</h2>
-        </div>
-        <a class="week__more" href="#calendar">See the full calendar<svg><use href="#i-arrow"/></svg></a>
-      </div>
-      <div class="week__days" id="weekDays"></div>
-      <p class="week__hint">Tap an open slot to enquire on WhatsApp.</p>
-    </div>
-  </section>
-
   <div class="announce" id="announce" hidden><div class="wrap"><span id="announceText"></span></div></div>
 
   <main id="main">
+    <!-- ============ CALENDAR: availability strip + month view ============ -->
+    <section class="section events calsec" id="calendar" aria-labelledby="calTitle">
+      <div class="wrap">
+        <div class="avail reveal" id="avail" hidden>
+          <div class="avail__head">
+            <div>
+              <p class="kicker">Book a slot</p>
+              <h2 class="avail__title" id="calTitle">Availability for the next 30 days</h2>
+            </div>
+            <div class="avail__legend">
+              <span><i class="is-open"></i>Open</span><span><i class="is-some"></i>Few slots left</span><span><i class="is-full"></i>Fully booked</span>
+            </div>
+          </div>
+          <div class="avail__days" id="availDays" role="list"></div>
+          <p class="avail__hint">Tap a green or orange day to enquire on WhatsApp. Full details are in the calendar below.</p>
+        </div>
+
+        <div class="cal cal--dark reveal" id="calBox">
+          <div class="cal__head">
+            <div>
+              <h3 class="h3">Ground calendar</h3>
+              <p class="cal__sub">See which days are booked and which slots are open. Every day has three slots: 7:00 – 10:30 AM, 10:45 AM – 2:15 PM and 2:30 – 6:00 PM.</p>
+            </div>
+            <div class="cal__nav">
+              <button class="cal__arrow" id="calPrev" type="button" aria-label="Previous month"><svg style="transform:scaleX(-1)"><use href="#i-chev"/></svg></button>
+              <b id="calMonth" aria-live="polite"></b>
+              <button class="cal__arrow" id="calNext" type="button" aria-label="Next month"><svg><use href="#i-chev"/></svg></button>
+            </div>
+          </div>
+          <div class="cal-legend" id="calLegend"></div>
+          <div class="cal__body">
+            <div>
+              <div class="cal-grid" id="calGrid"></div>
+              <div class="cal-stats" id="calStats"></div>
+            </div>
+            <div class="cal__detail" id="calDetail" aria-live="polite"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
     <!-- ============ STATS ============ -->
     <section class="stats">
       <div class="wrap stats__grid">
@@ -262,28 +289,6 @@
           <ol class="fixture-list" id="fixtureList"></ol>
           <p class="empty" id="fixturesEmpty" hidden>No fixtures are listed right now. Follow us on Instagram for the next announcement.</p>
           <button class="btn btn--ghost" id="showPast" hidden>Show past fixtures</button>
-        </div>
-
-        <div class="cal cal--dark reveal" id="calendar">
-          <div class="cal__head">
-            <div>
-              <h3 class="h3">Ground calendar</h3>
-              <p class="cal__sub">See which days are booked and which slots are open. Every day has three slots: 7:00 – 10:30 AM, 10:45 AM – 2:15 PM and 2:30 – 6:00 PM.</p>
-            </div>
-            <div class="cal__nav">
-              <button class="cal__arrow" id="calPrev" type="button" aria-label="Previous month"><svg style="transform:scaleX(-1)"><use href="#i-chev"/></svg></button>
-              <b id="calMonth" aria-live="polite"></b>
-              <button class="cal__arrow" id="calNext" type="button" aria-label="Next month"><svg><use href="#i-chev"/></svg></button>
-            </div>
-          </div>
-          <div class="cal-legend" id="calLegend"></div>
-          <div class="cal__body">
-            <div>
-              <div class="cal-grid" id="calGrid"></div>
-              <div class="cal-stats" id="calStats"></div>
-            </div>
-            <div class="cal__detail" id="calDetail" aria-live="polite"></div>
-          </div>
         </div>
 
         <aside class="host-cta reveal">
@@ -473,7 +478,7 @@
         <p class="footer__contacts" id="footerContacts"></p>
       </div>
       <nav class="footer__nav" aria-label="Footer">
-        <a href="#ground">The Ground</a><a href="#amenities">Amenities</a><a href="#events">Fixtures</a><a href="#honours">Honour Board</a><a href="#gallery">Gallery</a><a href="#visit">Visit</a>
+        <a href="#ground">The Ground</a><a href="#calendar">Calendar</a><a href="#amenities">Amenities</a><a href="#events">Fixtures</a><a href="#honours">Honour Board</a><a href="#gallery">Gallery</a><a href="#visit">Visit</a>
       </nav>
       <div class="footer__social" id="footerSocial">
         <a href="https://www.instagram.com/bailscricket/" target="_blank" rel="noopener" aria-label="Instagram" data-social="instagram"><svg><use href="#i-insta"/></svg></a>

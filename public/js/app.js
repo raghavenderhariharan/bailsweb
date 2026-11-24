@@ -380,44 +380,50 @@
     renderWeek();
   }
 
-  // ------------------------------------------------------------ open slots, next 7 days
+  // ------------------------------------------------------------ availability strip, next 30 days
+  const nowHM = () => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  /** Slots still bookable on a date: not blocked, and (today only) not already started */
+  function openSlots(date) {
+    const taken = BailsCal.slotsTaken(cal.map.get(date) || []);
+    const today = BailsCal.todayIST();
+    const hm = nowHM();
+    return BailsCal.SLOTS.filter((s) => !taken[s.id] && !(date === today && s.start <= hm));
+  }
+  function goToCalendarDay(date) {
+    const [y, m] = date.split('-').map(Number);
+    cal.y = y; cal.m = m - 1; cal.selected = date; drawMonth();
+    $('#calBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   function renderWeek() {
     const today = BailsCal.todayIST();
-    const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
     const days = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 30; i++) {
       const d = new Date(`${today}T12:00:00Z`);
       d.setUTCDate(d.getUTCDate() + i);
       days.push(d.toISOString().slice(0, 10));
     }
-    const html = days.map((date, i) => {
-      const taken = BailsCal.slotsTaken(cal.map.get(date) || []);
-      // today: slots that have already started can't be booked
-      const open = BailsCal.SLOTS.filter((s) => !taken[s.id] && !(i === 0 && s.start <= nowHM));
+    $('#availDays').innerHTML = days.map((date, i) => {
+      const n = openSlots(date).length;
+      const state = n === 0 ? 'is-full' : n === 3 ? 'is-open' : 'is-some';
       const dt = new Date(`${date}T12:00:00Z`);
-      const wd = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dt.toLocaleString('en-IN', { weekday: 'short', timeZone: 'UTC' });
-      const dm = dt.toLocaleString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-      return `<div class="wday ${open.length ? '' : 'is-full'}">
-        <div class="wday__date"><b>${esc(wd)}</b><span>${esc(dm)}</span></div>
-        <div class="wday__slots">
-          ${open.length
-            ? open.map((s) => `<button type="button" class="wslot" data-date="${date}" data-slot="${s.id}" title="${esc(`${s.name}, ${s.time}`)}"><span>${esc(BailsCal.time12(s.start))}</span><small>${esc(s.name)}</small></button>`).join('')
-            : `<span class="wday__none">${i === 0 && BailsCal.SLOTS.some((s) => !taken[s.id]) ? 'No more slots today' : 'Fully booked'}</span>`}
-        </div>
-      </div>`;
+      const wd = dt.toLocaleString('en-IN', { weekday: 'short', timeZone: 'UTC' });
+      const day = dt.getUTCDate();
+      const mon = i === 0 || day === 1 ? dt.toLocaleString('en-IN', { month: 'short', timeZone: 'UTC' }) : '';
+      const label = n === 0 ? 'fully booked' : `${n} slot${n > 1 ? 's' : ''} open`;
+      return `<button type="button" class="aday ${state} ${i === 0 ? 'is-today' : ''}" data-date="${date}" role="listitem"
+          title="${esc(`${BailsCal.dayLabel(date)}: ${label}`)}" aria-label="${esc(`${BailsCal.dayLabel(date)}: ${label}`)}">
+        <small>${i === 0 ? 'Today' : esc(wd)}</small><b>${day}</b><em>${n ? `${n}/3` : 'Full'}</em>${mon ? `<span class="aday__mon">${esc(mon)}</span>` : ''}
+      </button>`;
     }).join('');
-    $('#weekDays').innerHTML = html;
-    $('#openSlots').hidden = false;
-    $('#weekDays').onclick = (e) => {
-      const b = e.target.closest('.wslot'); if (!b) return;
-      const [y, m] = b.dataset.date.split('-').map(Number);
-      if (cal.isAdmin || !siteData?.settings?.whatsapp) {
-        // admins (or no WhatsApp number): jump to that day on the calendar
-        cal.y = y; cal.m = m - 1; cal.selected = b.dataset.date; drawMonth();
-        $('#calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
-      openEnquiry(b.dataset.date, [b.dataset.slot]);
+    $('#avail').hidden = false;
+    $('#availDays').onclick = (e) => {
+      const b = e.target.closest('.aday'); if (!b) return;
+      const date = b.dataset.date;
+      // same as the calendar: open slots -> enquiry; fully booked (or admin) -> show the day
+      if (cal.isAdmin || !siteData?.settings?.whatsapp || !openSlots(date).length) { goToCalendarDay(date); return; }
+      const [y, m] = date.split('-').map(Number);
+      cal.y = y; cal.m = m - 1; cal.selected = date; drawMonth();
+      openEnquiry(date, null);
     };
   }
   function drawMonth() {
@@ -442,7 +448,7 @@
       const date = day.dataset.date;
       const chip = e.target.closest('.chip-b.is-open');
       const taken = BailsCal.slotsTaken(cal.map.get(date) || []);
-      const anyOpen = BailsCal.SLOTS.some((s) => !taken[s.id]);
+      const anyOpen = openSlots(date).length > 0;
       selectOnly(e);
       if (date >= BailsCal.todayIST() && !cal.isAdmin && anyOpen && siteData?.settings?.whatsapp) {
         openEnquiry(date, chip ? [chip.dataset.slot] : null);
@@ -456,6 +462,7 @@
   function openEnquiry(date, preselect) {
     enq.date = date;
     enq.taken = BailsCal.slotsTaken(cal.map.get(date) || []);
+    if (date === BailsCal.todayIST()) BailsCal.SLOTS.forEach((s) => { if (!enq.taken[s.id] && s.start <= nowHM()) enq.taken[s.id] = { started: true }; });
     const open = BailsCal.SLOTS.filter((s) => !enq.taken[s.id]);
     const pre = new Set(preselect || open.map((s) => s.id));
     const fullOpen = open.length === BailsCal.SLOTS.length;
@@ -471,7 +478,7 @@
         return `<label class="enq__opt ${it ? 'is-taken' : ''}">
           <input type="checkbox" value="${s.id}" ${it ? 'disabled' : ''} ${!it && pre.has(s.id) ? 'checked' : ''}>
           <span><b>${s.name}</b><small>${s.time}</small></span>
-          <em>${it ? 'Booked' : 'Open'}</em>
+          <em>${it ? (it.started ? 'Started' : 'Booked') : 'Open'}</em>
         </label>`;
       }).join('')}`;
     syncFull();

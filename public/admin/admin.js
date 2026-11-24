@@ -91,7 +91,7 @@
       row: (e) => [
         esc(e.start.replace('T', ' ')),
         `<strong>${esc(e.title)}</strong>${e.tournament && e.kind === 'match' ? `<br><small>${esc(e.tournament)}${e.round ? ' · ' + esc(e.round) : ''}</small>` : ''}`,
-        `<span class="badge ${e.kind === 'tournament' ? 'badge--gold' : e.kind === 'event' ? '' : 'badge--muted'}">${esc(e.kind)}</span>${new Date(e.start + ':00+05:30') < new Date() ? ' <span class="badge badge--muted">past</span>' : ''}`,
+        `<span class="badge ${e.kind === 'tournament' ? 'badge--gold' : e.kind === 'event' ? '' : 'badge--muted'}">${esc(e.kind)}</span>${e.chMatchId ? ' <span class="badge badge--ch" title="Imported from CricHeroes">CricHeroes</span>' : ''}${new Date(e.start + ':00+05:30') < new Date() ? ' <span class="badge badge--muted">past</span>' : ''}`,
         `<button class="status-toggle ${e.active === false ? 'is-off' : 'is-on'}" type="button" data-toggle-active="${esc(e.id)}" aria-pressed="${e.active !== false}" title="${e.active === false ? 'Hidden from the website. Click to activate.' : 'Shown on the website. Click to deactivate.'}"><span></span>${e.active === false ? 'Inactive' : 'Active'}</button>`,
       ],
       sort: (a, b) => a.start.localeCompare(b.start),
@@ -143,6 +143,9 @@
     { name: 'instagramUrl', label: 'Instagram URL' },
     { name: 'facebookUrl', label: 'Facebook page URL', hint: 'Leave blank to hide the Facebook button' },
     { name: 'youtubeUrl', label: 'YouTube channel URL' },
+    { name: 'cricheroesGroundId', label: 'CricHeroes ground ID', placeholder: '750279', hint: 'From the ground page link: cricheroes.com/cricket-ground-detail/<ID>/…' },
+    { name: 'cricheroesAuto', label: 'Check CricHeroes for new matches automatically (every 6 hours)', type: 'checkbox', default: true },
+    { name: 'cricheroesExclude', label: 'Skip CricHeroes tournaments containing', placeholder: 'Octa, Practice', hint: 'Comma-separated. Matches from these tournaments are not imported.', default: 'Octa' },
     { name: 'gwSportsUrl', label: 'GW Sports booking page', placeholder: 'https://www.gwsportsapp.in/hyderabad/cricket/booking-sports-online-venue/…', hint: 'Online slot booking. Paste the Bails venue page from gwsportsapp.in once it is listed. Leave blank to hide the GW Sports buttons.' },
   ];
 
@@ -239,6 +242,8 @@
     $('#panel').hidden = name === 'settings' || name === 'calendar';
     $('#settingsPanel').hidden = name !== 'settings';
     $('#calPanel').hidden = name !== 'calendar';
+    $('#syncBar').hidden = !(name === 'calendar' || name === 'events');
+    renderSync();
     $('#listSearch').value = '';
     if (name === 'settings') renderSettings();
     else if (name === 'calendar') renderCalendarTab();
@@ -370,6 +375,8 @@
     $('#aCalMonth').textContent = C.monthLabel(acal.y, acal.m);
     const map = C.buildDayMap(data.events.map((e) => (e.active === false ? { ...e, teamA: '', teamB: '', title: `${e.title} (inactive)` } : e)), data.bookings);
     C.renderMonth($('#aCalGrid'), { year: acal.y, month: acal.m, map, selected: acal.selected, onSelect: (d) => { acal.selected = d; renderCalendarTab(); } });
+    $('#aCalStats').innerHTML = C.statsHtml(C.monthStats(acal.y, acal.m, map));
+    bulkDefaults();
     renderDay(map);
     renderUpcoming();
   }
@@ -452,6 +459,67 @@
     });
   }
 
+  // ---- bulk block / unblock
+  const bulkForm = $('#bulkForm');
+  function bulkDefaults() {
+    if (bulkForm.from.value) return;
+    bulkForm.from.value = acal.selected;
+    bulkForm.to.value = new Date(Date.UTC(acal.y, acal.m + 1, 0)).toISOString().slice(0, 10);
+    bulkPreview();
+  }
+  function bulkBody() {
+    const f = bulkForm;
+    return {
+      from: f.from.value, to: f.to.value, slot: f.slot.value, category: f.category.value,
+      label: f.label.value.trim(), note: f.note.value.trim(),
+      days: $$('input[name=day]:checked', f).map((x) => Number(x.value)),
+    };
+  }
+  function bulkDates(b) {
+    const out = [];
+    if (!b.from || !b.to || b.to < b.from) return out;
+    for (let d = new Date(`${b.from}T12:00:00Z`); d <= new Date(`${b.to}T12:00:00Z`) && out.length <= 400; d.setUTCDate(d.getUTCDate() + 1)) {
+      if (b.days.includes(d.getUTCDay())) out.push(d.toISOString().slice(0, 10));
+    }
+    return out;
+  }
+  function bulkPreview() {
+    const b = bulkBody();
+    const n = bulkDates(b).length;
+    $('#bulkPreview').textContent = n ? `${n} date${n > 1 ? 's' : ''} selected · ${C.SLOT_NAMES[b.slot]}` : 'No dates match. Check the range and the days.';
+  }
+  bulkForm.addEventListener('input', bulkPreview);
+  bulkForm.addEventListener('change', bulkPreview);
+  $$('[data-days]', bulkForm).forEach((btn) => btn.addEventListener('click', () => {
+    $$('input[name=day]', bulkForm).forEach((x) => { x.checked = btn.dataset.days.includes(x.value); });
+    bulkPreview();
+  }));
+  async function runBulk(mode) {
+    const b = bulkBody();
+    $('#bulkErr').textContent = '';
+    const dates = bulkDates(b);
+    if (!dates.length) { $('#bulkErr').textContent = 'No dates match. Check the range and the days.'; return; }
+    if (mode === 'unblock' && !confirm(`Remove blocks (${C.SLOT_NAMES[b.slot]}) on ${dates.length} date(s)? Fixtures are not affected.`)) return;
+    const btns = $$('button', bulkForm);
+    btns.forEach((x) => { x.disabled = true; });
+    try {
+      const r = await api('POST', '/api/bookings/bulk', { ...b, mode });
+      if (mode === 'unblock') {
+        const set = new Set(dates);
+        data.bookings = data.bookings.filter((x) => !(set.has(x.date) && C.PARTS[x.slot].some((part) => C.PARTS[b.slot].includes(part))));
+        toast(`Freed ${r.removed} block${r.removed === 1 ? '' : 's'}`);
+      } else {
+        data.bookings.push(...r.created);
+        toast(r.skipped.length ? `Blocked ${r.created.length} date(s); ${r.skipped.length} skipped (already blocked)` : `Blocked ${r.created.length} date(s)`, r.skipped.length > 0 && !r.created.length);
+        if (r.skipped.length) $('#bulkErr').textContent = `Skipped: ${r.skipped.map((x) => x.date).join(', ')}`;
+      }
+      renderCalendarTab();
+    } catch (err) { $('#bulkErr').textContent = err.message; }
+    btns.forEach((x) => { x.disabled = false; });
+  }
+  bulkForm.addEventListener('submit', (e) => { e.preventDefault(); runBulk('block'); });
+  $('#bulkUnblock').addEventListener('click', () => runBulk('unblock'));
+
   function renderUpcoming() {
     const today = C.todayIST();
     const list = data.bookings.filter((b) => b.date >= today).sort((a, b) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot));
@@ -481,6 +549,41 @@
       toast(df ? 'Fixture deleted' : 'Slot freed');
       renderCalendarTab();
     } catch (err) { toast(err.message, true); }
+  });
+
+  // ------------------------------------------------------------ CricHeroes sync
+  function ago(iso) {
+    const s = Math.round((Date.now() - new Date(iso)) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return `${Math.round(s / 60)} min ago`;
+    if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+    return new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' });
+  }
+  function renderSync() {
+    const r = data.sync;
+    const auto = data.settings.cricheroesAuto !== false;
+    $('#syncDot').className = `syncbar__dot ${!r ? '' : r.ok ? 'is-ok' : 'is-err'}`;
+    $('#syncText').textContent = !r
+      ? `Not checked yet${auto ? ' · checks automatically every 6 hours' : ''}`
+      : r.ok
+        ? `checked ${ago(r.at)} · ${r.found} upcoming at Bails · ${r.added} new, ${r.updated} updated${r.skipped ? `, ${r.skipped} skipped` : ''}${auto ? ' · auto every 6 h' : ' · auto off'}`
+        : `last check ${ago(r.at)} failed: ${r.error}`;
+  }
+  $('#syncBtn').addEventListener('click', async () => {
+    const btn = $('#syncBtn');
+    btn.disabled = true; btn.textContent = 'Checking CricHeroes…';
+    try {
+      const r = await fetch('/api/cricheroes/sync', { method: 'POST', credentials: 'same-origin' });
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 401) { showLogin(); return; }
+      if (j.events) data.events = j.events;
+      data.sync = j;
+      if (!r.ok) throw new Error(j.error || j.message || `Failed (${r.status})`);
+      toast(j.added || j.updated ? `${j.added} new and ${j.updated} updated fixture(s) from CricHeroes` : 'Up to date: no new matches on CricHeroes');
+      if (tab === 'calendar') renderCalendarTab(); else if (tab === 'events') renderList();
+    } catch (err) { toast(err.message, true); }
+    renderSync();
+    btn.disabled = false; btn.textContent = '↻ Refresh from CricHeroes';
   });
 
   $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) switchTab(b.dataset.tab); });

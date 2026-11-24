@@ -18,6 +18,16 @@ If `ADMIN_PASSWORD` isn't set, a temporary password is printed to the console on
 
 When you're signed in as admin, the home page also shows **+ Add fixture** and a delete button on each fixture.
 
+### CricHeroes sync
+
+The server reads upcoming matches from the ground's public CricHeroes page (ground ID `750279`) 30 seconds after it starts and then every 6 hours. Set `CRICHEROES_SYNC_HOURS` to change the interval. Admins can also click **↻ Refresh from CricHeroes** on the Calendar or Events tab.
+
+- New matches are added as active fixtures and tagged **CricHeroes** in the admin list. Known ones get their date, teams and round updated.
+- A fixture you delete is remembered and isn't imported again. To hide one for now, set it to Inactive instead.
+- Tournaments listed in Settings → "Skip CricHeroes tournaments containing" (default `Octa`) are never imported.
+- The ground page lists about the next 10 matches, so the sync sees that far ahead.
+- If Node shows `unable to get local issuer certificate` on a company network, start it with `NODE_OPTIONS=--use-system-ca npm start`. Render doesn't need this.
+
 ## Admin panel (`/admin`)
 
 | Tab | What it manages |

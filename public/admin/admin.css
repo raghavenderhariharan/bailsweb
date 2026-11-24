@@ -115,3 +115,20 @@ tr.is-editing td { background: #fff8e6; }
 .status-toggle.is-on span { background: var(--green); }
 .status-toggle.is-on span::after { transform: translateX(11px); }
 .status-toggle.is-off { color: var(--muted); }
+
+.dayitems li > i { background: #c8372f; }
+.bulk { margin-top: 22px; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: #fafbf8; }
+.bulk summary { font-weight: 700; cursor: pointer; }
+.bulk form { margin-top: 14px; }
+.days { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.days legend { font-size: .82rem; font-weight: 600; color: #34443b; margin-bottom: 6px; }
+.days__quick { display: flex; gap: 6px; margin-left: auto; }
+
+/* CricHeroes sync bar */
+.syncbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; padding: 10px 14px 10px 16px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-size: .9rem; }
+.syncbar__info { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.syncbar__info strong { color: var(--ink); }
+.syncbar__dot { width: 10px; height: 10px; border-radius: 50%; background: #c9cfcb; flex: none; }
+.syncbar__dot.is-ok { background: #23935a; box-shadow: 0 0 0 4px rgba(35, 147, 90, .15); }
+.syncbar__dot.is-err { background: var(--red); box-shadow: 0 0 0 4px rgba(198, 42, 47, .15); }
+.badge--ch { background: #fde8d7; color: #a4500f; }

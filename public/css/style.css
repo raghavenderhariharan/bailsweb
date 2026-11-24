@@ -553,3 +553,12 @@ p { margin: 0 0 1em; }
 .board__more { display: block; margin: 22px auto 0; padding: 10px 22px; border-radius: 999px; border: 1px solid rgba(246, 220, 140, .5); background: rgba(246, 220, 140, .08); color: var(--gold-hi); font-family: var(--font-board); font-weight: 700; letter-spacing: .08em; }
 .board__more:hover { background: rgba(246, 220, 140, .18); }
 .board__source { text-align: center; font-size: .85rem; opacity: .65; margin: 18px auto 0; max-width: 46em; color: #fff; }
+
+.cal__item > i { background: #c8372f; }
+.cal__body { grid-template-columns: 1fr; }
+.cal__detail { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(0, 2fr); gap: 6px 28px; align-items: start; }
+.cal__detail h4 { grid-column: 1 / -1; }
+.cal__detail .cal__items, .cal__detail .cal__none { grid-column: 1; }
+.cal__detail .cal__open, .cal__detail .cal__full { grid-column: 2; grid-row: 2 / span 3; }
+.cal__detail .cal__admin { grid-column: 1 / -1; }
+@media (max-width: 760px) { .cal__detail { grid-template-columns: 1fr; } .cal__detail > * { grid-column: 1 !important; grid-row: auto !important; } }

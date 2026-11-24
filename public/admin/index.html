@@ -46,6 +46,10 @@
     </header>
 
     <main class="content">
+      <div class="syncbar" id="syncBar" hidden>
+        <div class="syncbar__info"><span class="syncbar__dot" id="syncDot"></span><span><strong>CricHeroes</strong> <span id="syncText">Not checked yet</span></span></div>
+        <button class="btn btn--primary btn--sm" id="syncBtn" type="button">↻ Refresh from CricHeroes</button>
+      </div>
       <section class="panel" id="panel">
         <div class="panel__form">
           <h2 id="formTitle">Add entry</h2>
@@ -77,6 +81,39 @@
           </div>
           <div class="cal-legend" id="aCalLegend"></div>
           <div class="cal-grid" id="aCalGrid"></div>
+          <div class="cal-stats" id="aCalStats"></div>
+
+          <details class="bulk" id="bulkBox">
+            <summary>Bulk block or unblock dates</summary>
+            <form id="bulkForm" novalidate>
+              <div class="row row--3">
+                <label><span class="lbl">From *</span><input type="date" name="from" required></label>
+                <label><span class="lbl">To *</span><input type="date" name="to" required></label>
+                <label><span class="lbl">Slot</span><select name="slot"><option value="full">Full day (all 3 slots)</option><option value="s1">Slot 1 · 7:00 – 10:30 AM</option><option value="s2">Slot 2 · 10:45 AM – 2:15 PM</option><option value="s3">Slot 3 · 2:30 – 6:00 PM</option></select></label>
+              </div>
+              <fieldset class="days"><legend class="lbl">On these days</legend>
+                <label class="check"><input type="checkbox" name="day" value="1" checked> Mon</label>
+                <label class="check"><input type="checkbox" name="day" value="2" checked> Tue</label>
+                <label class="check"><input type="checkbox" name="day" value="3" checked> Wed</label>
+                <label class="check"><input type="checkbox" name="day" value="4" checked> Thu</label>
+                <label class="check"><input type="checkbox" name="day" value="5" checked> Fri</label>
+                <label class="check"><input type="checkbox" name="day" value="6" checked> Sat</label>
+                <label class="check"><input type="checkbox" name="day" value="0" checked> Sun</label>
+                <span class="days__quick"><button type="button" class="btn btn--ghost btn--sm" data-days="12345">Weekdays</button><button type="button" class="btn btn--ghost btn--sm" data-days="60">Weekends</button><button type="button" class="btn btn--ghost btn--sm" data-days="1234560">Every day</button></span>
+              </fieldset>
+              <div class="row">
+                <label><span class="lbl">Reason</span><select name="category"><option value="hca">HCA division match</option><option value="tournament">Tournament</option><option value="private">Private booking</option><option value="practice">Practice / nets</option><option value="maintenance">Ground maintenance</option><option value="other">Other (booked)</option></select></label>
+                <label><span class="lbl">Label on the calendar</span><input name="label" maxlength="100" placeholder="e.g. HCA, ECL, Octa"></label>
+              </div>
+              <label><span class="lbl">Private note (admins only)</span><input name="note" maxlength="300"></label>
+              <p class="hint" id="bulkPreview"></p>
+              <p class="field-error" id="bulkErr" role="alert"></p>
+              <div class="form__actions">
+                <button class="btn btn--primary" type="submit" data-mode="block">Block these dates</button>
+                <button class="btn btn--danger" type="button" id="bulkUnblock">Unblock these dates</button>
+              </div>
+            </form>
+          </details>
           <h3 class="upcoming__title">Upcoming blocked slots</h3>
           <div id="aUpcoming"></div>
         </div>

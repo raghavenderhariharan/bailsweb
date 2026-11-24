@@ -9,7 +9,10 @@
     "announcement": "Bails Cricket League Season 1 (Mixed Corporate) is coming, with a tentative start on 13 Dec 2026. Team registrations are open, with early-bird entry at ₹46,999.",
     "bookingNote": "Full-day and half-day bookings for leagues, corporate tournaments and practice matches. Umpires, scorers and match balls can be arranged.",
     "gwSportsUrl": "https://www.gwsportsapp.in/hyderabad/cricket/booking-sports-online-venue",
-    "contacts": "Raghu - 9908076230\nAravind - 9704872506\nVara prasad - 9948663713"
+    "contacts": "Raghu - 9908076230\nAravind - 9704872506\nVara prasad - 9948663713",
+    "cricheroesGroundId": "750279",
+    "cricheroesAuto": true,
+    "cricheroesExclude": "Octa"
   },
   "honours": [
     {
@@ -2270,7 +2273,8 @@
       "teamA": "JBN Dashers",
       "teamB": "SATS (ODI) x TEAM HORIZON",
       "start": "2026-11-29T10:45",
-      "format": "T20"
+      "format": "T20",
+      "chMatchId": "27798837"
     },
     {
       "id": "seed-m-2",
@@ -2430,5 +2434,230 @@
     }
   ],
   "instagram": [],
-  "bookings": []
+  "bookings": [
+    {
+      "id": "seed-b-1",
+      "date": "2026-11-01",
+      "slot": "full",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-4",
+      "date": "2026-11-02",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-5",
+      "date": "2026-11-03",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-6",
+      "date": "2026-11-04",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-7",
+      "date": "2026-11-05",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-8",
+      "date": "2026-11-06",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-22",
+      "date": "2026-11-07",
+      "slot": "full",
+      "category": "other",
+      "label": "Bislery"
+    },
+    {
+      "id": "seed-b-9",
+      "date": "2026-11-09",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-10",
+      "date": "2026-11-10",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-11",
+      "date": "2026-11-11",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-12",
+      "date": "2026-11-12",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-13",
+      "date": "2026-11-13",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-23",
+      "date": "2026-11-14",
+      "slot": "s1",
+      "category": "tournament",
+      "label": "Octa tournament"
+    },
+    {
+      "id": "seed-b-24",
+      "date": "2026-11-14",
+      "slot": "s2",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-25",
+      "date": "2026-11-14",
+      "slot": "s3",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-2",
+      "date": "2026-11-15",
+      "slot": "full",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-14",
+      "date": "2026-11-16",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-15",
+      "date": "2026-11-17",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-16",
+      "date": "2026-11-18",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-17",
+      "date": "2026-11-19",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-18",
+      "date": "2026-11-20",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-26",
+      "date": "2026-11-21",
+      "slot": "s1",
+      "category": "tournament",
+      "label": "Octa tournament"
+    },
+    {
+      "id": "seed-b-27",
+      "date": "2026-11-21",
+      "slot": "s2",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-28",
+      "date": "2026-11-21",
+      "slot": "s3",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-3",
+      "date": "2026-11-22",
+      "slot": "full",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-19",
+      "date": "2026-11-23",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-20",
+      "date": "2026-11-24",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-21",
+      "date": "2026-11-25",
+      "slot": "full",
+      "category": "hca",
+      "label": "HCA"
+    },
+    {
+      "id": "seed-b-29",
+      "date": "2026-11-28",
+      "slot": "s1",
+      "category": "tournament",
+      "label": "Octa tournament"
+    },
+    {
+      "id": "seed-b-30",
+      "date": "2026-11-28",
+      "slot": "s2",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-31",
+      "date": "2026-11-28",
+      "slot": "s3",
+      "category": "tournament",
+      "label": "ECL"
+    },
+    {
+      "id": "seed-b-32",
+      "date": "2026-11-29",
+      "slot": "s1",
+      "category": "tournament",
+      "label": "ECL"
+    }
+  ]
 }

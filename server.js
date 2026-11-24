@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import fss from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchUpcoming } from './cricheroes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3000;
@@ -40,6 +41,24 @@ async function loadDb() {
   }
   for (const k of ['honours', 'events', 'media', 'instagram', 'bookings']) db[k] ??= [];
   db.settings ??= {};
+  await applySeedUpdates();
+}
+
+// One-time content updates for databases created from an older seed.
+// Each update runs once; its id is remembered in db.applied.
+async function applySeedUpdates() {
+  db.applied ??= [];
+  const seed = JSON.parse(await fs.readFile(SEED_FILE, 'utf8'));
+  let changed = false;
+  if (!db.applied.includes('blocks-nov-2026')) {
+    const have = new Set(db.bookings.map((b) => b.id));
+    for (const b of (seed.bookings || []).filter((x) => x.id.startsWith('seed-b-') && !have.has(x.id))) {
+      try { validateBooking(b); db.bookings.push(b); } catch { /* slot already taken: keep the existing entry */ }
+    }
+    db.applied.push('blocks-nov-2026');
+    changed = true;
+  }
+  if (changed) await saveDb();
 }
 
 function saveDb() {
@@ -97,6 +116,7 @@ const SCHEMAS = {
     highlights: str(1500),
     tentative: { t: 'bool' },
     active: { t: 'bool' }, // false hides it from the website (missing = active)
+    chMatchId: { t: 'str', max: 20, re: /^\d+$/ }, // set on fixtures imported from CricHeroes
     featured: { t: 'bool' },
   },
   // Calendar blockings: a date plus a slot (full day, or slot 1, 2 or 3)
@@ -125,6 +145,9 @@ const SETTINGS_SCHEMA = {
   facebookUrl: { t: 'url' },
   youtubeUrl: { t: 'url' },
   gwSportsUrl: { t: 'url', re: /^https:\/\/(www\.)?gwsportsapp\.in\/\S*$/ },
+  cricheroesGroundId: { t: 'str', max: 12, re: /^\d+$/ },
+  cricheroesAuto: { t: 'bool' },
+  cricheroesExclude: str(300),
   phone1: str(24),
   phone2: str(24),
   whatsapp: { t: 'str', max: 15, re: /^\d{10,15}$/ },
@@ -366,6 +389,42 @@ function collection(req) {
   return name;
 }
 
+// Admin: block or unblock many dates at once
+app.post('/api/bookings/bulk', requireAdmin, async (req, res) => {
+  const body = req.body || {};
+  const mode = body.mode === 'unblock' ? 'unblock' : 'block';
+  const { from, to } = clean({ from: { t: 'date', req: true }, to: { t: 'date', req: true } }, body);
+  const days = Array.isArray(body.days) ? body.days.map(Number).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6) : [];
+  if (!days.length) throw httpError(400, 'Pick at least one day of the week');
+  if (to < from) throw httpError(400, '"To" must be on or after "From"');
+  const dates = [];
+  for (let d = new Date(`${from}T12:00:00Z`); d <= new Date(`${to}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1)) {
+    if (days.includes(d.getUTCDay())) dates.push(d.toISOString().slice(0, 10));
+    if (dates.length > 400) throw httpError(400, 'That range is too long (400 dates at most)');
+  }
+  if (mode === 'unblock') {
+    const slot = body.slot || 'full';
+    if (!SLOT_PARTS[slot]) throw httpError(400, 'Invalid slot');
+    const set = new Set(dates);
+    const before = db.bookings.length;
+    db.bookings = db.bookings.filter((b) => !(set.has(b.date) && SLOT_PARTS[b.slot].some((p) => SLOT_PARTS[slot].includes(p))));
+    await saveDb();
+    return res.json({ removed: before - db.bookings.length, dates: dates.length });
+  }
+  const base = clean(SCHEMAS.bookings, { ...body, date: from });
+  const created = []; const skipped = [];
+  for (const date of dates) {
+    const item = { ...base, date };
+    try { validateBooking(item); } catch (err) { skipped.push({ date, reason: err.message }); continue; }
+    item.id = crypto.randomUUID();
+    item.createdAt = new Date().toISOString();
+    db.bookings.push(item);
+    created.push(item);
+  }
+  await saveDb();
+  res.status(201).json({ created, skipped });
+});
+
 app.post('/api/:collection', requireAdmin, async (req, res) => {
   const name = collection(req);
   const item = clean(SCHEMAS[name], req.body);
@@ -393,6 +452,9 @@ app.put('/api/:collection/:id', requireAdmin, async (req, res) => {
 
 app.delete('/api/:collection/:id', requireAdmin, async (req, res) => {
   const name = collection(req);
+  const gone = db[name].find((x) => x.id === req.params.id);
+  // Remember deleted CricHeroes fixtures so the next sync doesn't bring them back
+  if (gone?.chMatchId) { db.chIgnored ??= []; if (!db.chIgnored.includes(gone.chMatchId)) db.chIgnored.push(gone.chMatchId); }
   const before = db[name].length;
   db[name] = db[name].filter((x) => x.id !== req.params.id);
   if (db[name].length === before) throw httpError(404, 'Not found');
@@ -411,6 +473,11 @@ app.post('/api/media-order', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/api/cricheroes/sync', requireAdmin, async (_req, res) => {
+  const result = await syncCricHeroes('manual');
+  res.status(result.ok ? 200 : 502).json({ ...result, events: db.events });
+});
+
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
 // Static site
@@ -425,6 +492,60 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ error: status >= 500 ? 'Something went wrong' : err.message });
 });
 
+// ---------------------------------------------------------------- CricHeroes sync
+// Imports upcoming matches from the ground's CricHeroes page. New matches are added as
+// active fixtures; known ones get their date, teams and round updated. Fixtures an admin
+// deleted, and tournaments listed in "cricheroesExclude", are skipped.
+let syncing = null;
+async function syncCricHeroes(trigger) {
+  if (syncing) return syncing;
+  syncing = (async () => {
+    const groundId = db.settings.cricheroesGroundId || '750279';
+    const exclude = String(db.settings.cricheroesExclude ?? 'Octa').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+    const result = { at: new Date().toISOString(), trigger, ok: false, found: 0, added: 0, updated: 0, skipped: 0 };
+    try {
+      const upcoming = await fetchUpcoming(groundId);
+      result.found = upcoming.length;
+      const ignored = new Set(db.chIgnored || []);
+      const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const m of upcoming) {
+        if (ignored.has(m.chMatchId) || exclude.some((x) => m.tournament.toLowerCase().includes(x))) { result.skipped++; continue; }
+        // Already imported, or the same match entered by hand (same day and teams)?
+        let ev = db.events.find((e) => e.chMatchId === m.chMatchId)
+          || db.events.find((e) => e.kind === 'match' && !e.chMatchId && e.start.slice(0, 10) === m.start.slice(0, 10)
+            && norm(e.teamA) === norm(m.teamA) && norm(e.teamB) === norm(m.teamB));
+        if (ev) {
+          const fields = ['title', 'teamA', 'teamB', 'tournament', 'round', 'start', 'format', 'chMatchId'];
+          const changed = fields.some((k) => (ev[k] || '') !== (m[k] || ''));
+          if (changed) {
+            fields.forEach((k) => { if (m[k]) ev[k] = m[k]; });
+            ev.updatedAt = result.at;
+            result.updated++;
+          }
+        } else {
+          const item = { ...clean(SCHEMAS.events, m), id: crypto.randomUUID(), createdAt: result.at, source: 'cricheroes' };
+          db.events.push(item);
+          result.added++;
+        }
+      }
+      result.ok = true;
+    } catch (err) {
+      result.error = err.message;
+    }
+    db.sync = result;
+    await saveDb();
+    console.log(`[cricheroes] ${trigger} sync: ${result.ok ? `${result.found} upcoming, ${result.added} added, ${result.updated} updated, ${result.skipped} skipped` : `failed: ${result.error}`}`);
+    return result;
+  })().finally(() => { syncing = null; });
+  return syncing;
+}
+
 await loadDb();
+
+// Automatic sync: shortly after start, then every CRICHEROES_SYNC_HOURS (default 6)
+const SYNC_HOURS = Math.max(1, Number(process.env.CRICHEROES_SYNC_HOURS) || 6);
+const autoSync = () => { if (db.settings.cricheroesAuto !== false) syncCricHeroes('auto').catch(() => {}); };
+setTimeout(autoSync, 30 * 1000).unref();
+setInterval(autoSync, SYNC_HOURS * 3600 * 1000).unref();
 if (!fss.existsSync(path.join(__dirname, 'public', 'index.html'))) console.warn('public/index.html missing');
 app.listen(PORT, () => console.log(`BAIL'S Cricket Ground site running at http://localhost:${PORT}  (admin: /admin)`));

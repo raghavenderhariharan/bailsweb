@@ -385,6 +385,7 @@
       cal.selected = inMonth(today) ? today : first || `${cal.y}-${String(cal.m + 1).padStart(2, '0')}-01`;
     }
     BailsCal.renderMonth($('#calGrid'), { year: cal.y, month: cal.m, map: cal.map, selected: cal.selected, onSelect: (d) => { cal.selected = d; drawMonth(); } });
+    $('#calStats').innerHTML = BailsCal.statsHtml(BailsCal.monthStats(cal.y, cal.m, cal.map));
     drawDay();
   }
   function drawDay() {

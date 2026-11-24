@@ -96,6 +96,7 @@ const SCHEMAS = {
     contact: str(200),
     highlights: str(1500),
     tentative: { t: 'bool' },
+    active: { t: 'bool' }, // false hides it from the website (missing = active)
     featured: { t: 'bool' },
   },
   // Calendar blockings: a date plus a slot (full day, or slot 1, 2 or 3)
@@ -308,7 +309,7 @@ app.get('/api/public', (req, res) => {
   res.set('Cache-Control', 'no-cache');
   res.json({
     settings: db.settings,
-    events: [...db.events].sort(byStart),
+    events: db.events.filter((e) => e.active !== false).sort(byStart),
     honours: [...db.honours].sort((a, b) => b.date.localeCompare(a.date)),
     media: db.media,
     instagram: db.instagram,

@@ -68,7 +68,7 @@
     events: {
       title: 'Events & Fixtures',
       hint: 'Add tournaments (shown as feature cards) and individual match fixtures. Times are in IST.',
-      defaults: () => ({ kind: 'match', format: 'T20' }),
+      defaults: () => ({ kind: 'match', format: 'T20', active: true }),
       fields: [
         { name: 'kind', label: 'Type', type: 'select', options: [['match', 'Match fixture'], ['tournament', 'Tournament'], ['event', 'Other event (camp, trials, corporate day…)']], required: true },
         { name: 'title', label: 'Title', required: true, placeholder: 'Auto-filled from team names for matches', hint: 'For matches, leave blank to use "Team A vs Team B"' },
@@ -83,14 +83,16 @@
         [{ name: 'fee', label: 'Entry fee', placeholder: '₹49,999 per team · Early bird ₹46,999', show: (v) => v.kind !== 'match' }, { name: 'contact', label: 'Registration contacts', placeholder: 'Raghu 99080 76230 · Aravind 97048 72506', show: (v) => v.kind !== 'match' }],
         { name: 'highlights', label: 'Highlights (one per line)', type: 'textarea', show: (v) => v.kind !== 'match', placeholder: 'Professional umpires\n360° camera coverage' },
         { name: 'link', label: 'Link (registration / live scores)', placeholder: 'https://…' },
+        { name: 'active', label: 'Active (shown on the website)', type: 'checkbox', default: true },
         { name: 'tentative', label: 'Dates are tentative (shown as "Tentative start")', type: 'checkbox', show: (v) => v.kind !== 'match' },
         { name: 'featured', label: 'Feature on home page', type: 'checkbox', show: (v) => v.kind !== 'match' },
       ],
-      columns: ['When (IST)', 'Event', 'Type'],
+      columns: ['When (IST)', 'Event', 'Type', 'Status'],
       row: (e) => [
         esc(e.start.replace('T', ' ')),
         `<strong>${esc(e.title)}</strong>${e.tournament && e.kind === 'match' ? `<br><small>${esc(e.tournament)}${e.round ? ' · ' + esc(e.round) : ''}</small>` : ''}`,
         `<span class="badge ${e.kind === 'tournament' ? 'badge--gold' : e.kind === 'event' ? '' : 'badge--muted'}">${esc(e.kind)}</span>${new Date(e.start + ':00+05:30') < new Date() ? ' <span class="badge badge--muted">past</span>' : ''}`,
+        `<button class="status-toggle ${e.active === false ? 'is-off' : 'is-on'}" type="button" data-toggle-active="${esc(e.id)}" aria-pressed="${e.active !== false}" title="${e.active === false ? 'Hidden from the website. Click to activate.' : 'Shown on the website. Click to deactivate.'}"><span></span>${e.active === false ? 'Inactive' : 'Active'}</button>`,
       ],
       sort: (a, b) => a.start.localeCompare(b.start),
       text: (e) => [e.title, e.tournament, e.teamA, e.teamB].join(' '),
@@ -148,7 +150,7 @@
   const flat = (fields) => fields.flat();
   function fieldHtml(f, v) {
     const id = `f_${f.name}`;
-    const val = v[f.name] ?? '';
+    const val = v[f.name] ?? f.default ?? '';
     const req = f.required ? ' <span aria-hidden="true">*</span>' : '';
     const hint = f.hint ? `<small>${esc(f.hint)}</small>` : '';
     const hidden = f.show && !f.show(v) ? ' hidden' : '';
@@ -298,6 +300,19 @@
     const edit = e.target.closest('[data-edit]');
     const del = e.target.closest('[data-del]');
     const move = e.target.closest('[data-move]');
+    const tog = e.target.closest('[data-toggle-active]');
+    if (tog) {
+      const item = data.events.find((x) => x.id === tog.dataset.toggleActive);
+      tog.disabled = true;
+      try {
+        const saved = await api('PUT', `/api/events/${item.id}`, { active: item.active === false });
+        data.events = data.events.map((x) => (x.id === saved.id ? saved : x));
+        toast(saved.active === false ? 'Hidden from the website' : 'Now showing on the website');
+        if (editingId === saved.id) renderEditor(saved);
+        renderList();
+      } catch (err) { toast(err.message, true); tog.disabled = false; }
+      return;
+    }
     if (edit) {
       renderEditor(data[tab].find((x) => x.id === edit.dataset.edit));
       renderList();
@@ -353,7 +368,7 @@
   function renderCalendarTab() {
     $('#aCalLegend').innerHTML = C.LEGEND;
     $('#aCalMonth').textContent = C.monthLabel(acal.y, acal.m);
-    const map = C.buildDayMap(data.events, data.bookings);
+    const map = C.buildDayMap(data.events.map((e) => (e.active === false ? { ...e, teamA: '', teamB: '', title: `${e.title} (inactive)` } : e)), data.bookings);
     C.renderMonth($('#aCalGrid'), { year: acal.y, month: acal.m, map, selected: acal.selected, onSelect: (d) => { acal.selected = d; renderCalendarTab(); } });
     renderDay(map);
     renderUpcoming();

@@ -106,3 +106,12 @@ tr.is-editing td { background: #fff8e6; }
 .badge--blue { background: #e1eefb; color: #1f5f9e; }
 .empty--sm { padding: 12px 0; text-align: left; }
 @media (max-width: 1000px) { .calpanel { grid-template-columns: 1fr; } .calpanel__day { position: static; max-height: none; } }
+
+/* active / inactive toggle */
+.status-toggle { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 5px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+.status-toggle span { width: 26px; height: 15px; border-radius: 999px; background: #c9cfcb; position: relative; transition: background .2s; }
+.status-toggle span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.status-toggle.is-on { color: var(--green); border-color: #bfe0cb; }
+.status-toggle.is-on span { background: var(--green); }
+.status-toggle.is-on span::after { transform: translateX(11px); }
+.status-toggle.is-off { color: var(--muted); }

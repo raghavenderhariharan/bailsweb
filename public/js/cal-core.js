@@ -80,7 +80,7 @@
       const it = h[s.id];
       if (it) return `<span class="chip-b is-blocked" title="${esc(`${s.name} (${s.time}): ${it.label}${it.sub ? ` · ${it.sub}` : ''}`)}">${time12(it.time || s.start)} · ${esc(it.short)}</span>`;
       if (date < today) return '';
-      return `<span class="chip-b is-open" title="${esc(`${s.name} (${s.time}): open`)}">${time12(s.start)} · Open</span>`;
+      return `<span class="chip-b is-open" data-slot="${s.id}" title="${esc(`${s.name} (${s.time}): open. Click to enquire on WhatsApp`)}">${time12(s.start)} · Open</span>`;
     }).join('');
   }
 

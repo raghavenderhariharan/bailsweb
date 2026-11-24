@@ -390,9 +390,36 @@
       cal.selected = inMonth(today) ? today : first || `${cal.y}-${String(cal.m + 1).padStart(2, '0')}-01`;
     }
     BailsCal.renderMonth($('#calGrid'), { year: cal.y, month: cal.m, map: cal.map, selected: cal.selected, onSelect: (d) => { cal.selected = d; drawMonth(); } });
+    // Clicking an open slot, or a day that still has open slots, opens WhatsApp with an enquiry.
+    // Fully booked and past days just show their details below the calendar.
+    const grid = $('#calGrid');
+    const selectOnly = grid.onclick;
+    grid.onclick = (e) => {
+      const day = e.target.closest('button.cal__day');
+      if (!day) return;
+      const date = day.dataset.date;
+      const chip = e.target.closest('.chip-b.is-open');
+      const open = BailsCal.SLOTS.filter((s) => !BailsCal.slotsTaken(cal.map.get(date) || [])[s.id]);
+      const url = date >= BailsCal.todayIST() && !cal.isAdmin
+        ? enquiryUrl(date, chip ? BailsCal.SLOTS.filter((s) => s.id === chip.dataset.slot) : open)
+        : null;
+      selectOnly(e);
+      if (url) window.open(url, '_blank', 'noopener');
+    };
     $('#calStats').innerHTML = BailsCal.statsHtml(BailsCal.monthStats(cal.y, cal.m, cal.map));
     drawDay();
   }
+  /** WhatsApp link: "I am enquiring for <date>, <slot(s)>" */
+  function enquiryUrl(date, slots) {
+    const wa = siteData?.settings?.whatsapp;
+    if (!wa || !slots.length) return null;
+    const slotText = slots.length === 1
+      ? `${slots[0].name} (${slots[0].time})`
+      : `any of these open slots: ${slots.map((s) => `${s.name} (${s.time})`).join(', ')}`;
+    const msg = `Hi BAIL'S Cricket Ground! I am enquiring for ${BailsCal.dayLabel(date)}, ${slotText}. Is it available to book?`;
+    return `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
+  }
+
   function drawDay() {
     const date = cal.selected;
     const items = cal.map.get(date) || [];
@@ -403,11 +430,7 @@
         <div><b>${esc(it.label)}</b><small>${esc([it.kind === 'fixture' ? BailsCal.SLOT_SHORT[it.slot] : BailsCal.SLOT_NAMES[it.slot], it.time && BailsCal.time12(it.time), it.sub].filter(Boolean).join(' · '))}</small></div>
       </li>`;
     const open = BailsCal.SLOTS.filter((s) => !h[s.id]);
-    const ask = (slot) => {
-      const msg = `Hi BAIL'S Cricket Ground! Is ${slot} on ${BailsCal.dayLabel(date)} available to book?`;
-      const wa = siteData?.settings?.whatsapp;
-      return wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '#visit';
-    };
+    const ask = () => enquiryUrl(date, BailsCal.SLOTS.filter((s) => !h[s.id])) || '#visit';
     $('#calDetail').innerHTML = `
       <h4>${esc(BailsCal.dayLabel(date))}</h4>
       ${items.length ? `<ul class="cal__items">${items.map(row).join('')}</ul>` : `<p class="cal__none">Nothing booked yet.</p>`}

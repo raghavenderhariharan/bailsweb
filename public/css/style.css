@@ -562,3 +562,8 @@ p { margin: 0 0 1em; }
 .cal__detail .cal__open, .cal__detail .cal__full { grid-column: 2; grid-row: 2 / span 3; }
 .cal__detail .cal__admin { grid-column: 1 / -1; }
 @media (max-width: 760px) { .cal__detail { grid-template-columns: 1fr; } .cal__detail > * { grid-column: 1 !important; grid-row: auto !important; } }
+
+/* public calendar: open slots are clickable WhatsApp enquiries */
+#calGrid button.cal__day:not(.is-past):not(.is-full) { cursor: pointer; }
+#calGrid .chip-b.is-open { cursor: pointer; transition: filter .15s, transform .15s; }
+#calGrid .chip-b.is-open:hover { filter: brightness(1.15); transform: translateY(-1px); }

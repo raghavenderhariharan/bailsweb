@@ -511,7 +511,18 @@
     <form method="dialog" class="enq">
       <p class="enq__kicker">Booking enquiry</p>
       <h3 id="enqTitle"></h3>
-      <p class="enq__sub">Choose the slots you'd like to ask about. We'll open WhatsApp with your message ready to send.</p>
+      <p class="enq__sub" id="enqSub"></p>
+      <div class="enq__picker" id="enqPicker" hidden>
+        <div class="enq__pickhead">
+          <button type="button" class="enq__nav" id="enqPrev" aria-label="Previous month">&lsaquo;</button>
+          <b id="enqMonth"></b>
+          <button type="button" class="enq__nav" id="enqNext" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <div class="enq__wd" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        <div class="enq__days" id="enqDays"></div>
+        <div class="enq__legend"><span><i class="is-open"></i>Open</span><span><i class="is-some"></i>Few slots left</span><span><i class="is-full"></i>Fully booked</span></div>
+      </div>
+      <button type="button" class="enq__change" id="enqChange" hidden>Change date</button>
       <div class="enq__options" id="enqOptions"></div>
       <div class="enq__preview"><small>Your message</small><p id="enqMsg"></p></div>
       <p class="enq__err" id="enqErr" role="alert"></p>
@@ -519,6 +530,7 @@
         <a class="btn btn--gold" id="enqGo" href="#" target="_blank" rel="noopener"><svg><use href="#i-whatsapp"/></svg>Confirm &amp; open WhatsApp</a>
         <button class="btn btn--ghost" value="cancel">Cancel</button>
       </div>
+      <a class="enq__chat" id="enqChat" href="#" target="_blank" rel="noopener">Something else? Just chat with us on WhatsApp</a>
     </form>
   </dialog>
 

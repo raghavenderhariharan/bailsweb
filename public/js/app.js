@@ -140,7 +140,17 @@
       $$('[data-gw]').forEach((a) => { a.href = s.gwSportsUrl; a.hidden = false; });
       $$('[data-gw-item]').forEach((el) => { el.hidden = false; });
     }
-    if (wa) $$('[data-wa]').forEach((a) => { a.href = wa; a.target = '_blank'; a.rel = 'noopener'; });
+    if (wa) {
+      $$('[data-wa]').forEach((a) => { a.href = wa; a.target = '_blank'; a.rel = 'noopener'; });
+      $('#enqChat').href = wa;
+      // Ask for the date and slot first, so the first message already has them
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('[data-wa]');
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        e.preventDefault();
+        openEnquiry(null, null);
+      });
+    }
     const phones = [s.phone1, s.phone2].filter(Boolean);
     if (!phones.length) {
       $('#phones').textContent = 'TBD';
@@ -458,9 +468,69 @@
     drawDay();
   }
   // ---- booking enquiry dialog
-  const enq = { date: null, taken: {} };
+  const enq = { date: null, taken: {}, y: 0, m: 0 };
+  const ENQ_AHEAD_MONTHS = 6;
+  const isoDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  function drawPicker() {
+    const today = BailsCal.todayIST();
+    const [ty, tm] = today.split('-').map(Number);
+    const idx = enq.y * 12 + enq.m;
+    const min = ty * 12 + tm - 1;
+    $('#enqPrev').disabled = idx <= min;
+    $('#enqNext').disabled = idx >= min + ENQ_AHEAD_MONTHS;
+    $('#enqMonth').textContent = BailsCal.monthLabel(enq.y, enq.m);
+    const first = new Date(Date.UTC(enq.y, enq.m, 1));
+    const lead = (first.getUTCDay() + 6) % 7; // Monday first
+    const days = new Date(Date.UTC(enq.y, enq.m + 1, 0)).getUTCDate();
+    let html = '<span></span>'.repeat(lead);
+    for (let d = 1; d <= days; d++) {
+      const date = isoDate(enq.y, enq.m, d);
+      if (date < today) { html += `<span class="eday is-past">${d}</span>`; continue; }
+      const n = openSlots(date).length;
+      const state = n === 0 ? 'is-full' : n === 3 ? 'is-open' : 'is-some';
+      const label = n === 0 ? 'fully booked' : `${n} of 3 slots open`;
+      html += `<button type="button" class="eday ${state} ${date === enq.date ? 'is-sel' : ''} ${date === today ? 'is-today' : ''}"
+        data-date="${date}" ${n ? '' : 'aria-disabled="true"'} aria-label="${esc(`${BailsCal.dayLabel(date)}: ${label}`)}" title="${esc(label)}">${d}</button>`;
+    }
+    $('#enqDays').innerHTML = html;
+  }
+  function showPicker(show) {
+    $('#enqPicker').hidden = !show;
+    $('#enqChange').hidden = show || !enq.date;
+    if (show) drawPicker();
+  }
+  $('#enqPrev').addEventListener('click', () => { if (--enq.m < 0) { enq.m = 11; enq.y--; } drawPicker(); });
+  $('#enqNext').addEventListener('click', () => { if (++enq.m > 11) { enq.m = 0; enq.y++; } drawPicker(); });
+  $('#enqChange').addEventListener('click', () => showPicker(true));
+  $('#enqDays').addEventListener('click', (e) => {
+    const b = e.target.closest('button.eday'); if (!b) return;
+    if (!openSlots(b.dataset.date).length) {
+      $('#enqErr').textContent = `${BailsCal.dayLabel(b.dataset.date)} is fully booked. Please pick a green or orange day.`;
+      return;
+    }
+    fillEnquiry(b.dataset.date, null);
+    drawPicker();
+  });
+  /** Open the enquiry dialog. With no date, the colour-coded date picker is shown first. */
   function openEnquiry(date, preselect) {
+    const start = date || BailsCal.todayIST();
+    const [y, m] = start.split('-').map(Number);
+    enq.y = y; enq.m = m - 1;
+    if (date) fillEnquiry(date, preselect);
+    else {
+      enq.date = null;
+      $('#enqTitle').textContent = 'Pick a date';
+      $('#enqSub').textContent = 'Green days are open, orange have a few slots left, red are fully booked.';
+      $('#enqOptions').innerHTML = '';
+      updateEnquiry();
+    }
+    showPicker(!date);
+    $('#enqErr').textContent = '';
+    if (!$('#enquiryDialog').open) $('#enquiryDialog').showModal();
+  }
+  function fillEnquiry(date, preselect) {
     enq.date = date;
+    $('#enqSub').textContent = "Choose the slots you'd like to ask about. We'll open WhatsApp with your message ready to send.";
     enq.taken = BailsCal.slotsTaken(cal.map.get(date) || []);
     if (date === BailsCal.todayIST()) BailsCal.SLOTS.forEach((s) => { if (!enq.taken[s.id] && s.start <= nowHM()) enq.taken[s.id] = { started: true }; });
     const open = BailsCal.SLOTS.filter((s) => !enq.taken[s.id]);
@@ -483,18 +553,18 @@
       }).join('')}`;
     syncFull();
     updateEnquiry();
-    $('#enquiryDialog').showModal();
   }
   function enqBoxes() { return $$('#enqOptions input'); }
   function syncFull(changed) {
     const boxes = enqBoxes();
     const full = boxes.find((b) => b.value === 'full');
     const slots = boxes.filter((b) => b.value !== 'full' && !b.disabled);
-    if (full.disabled) return;
+    if (!full || full.disabled) return;
     if (changed === full) slots.forEach((b) => { b.checked = full.checked; });
     else full.checked = slots.length === BailsCal.SLOTS.length && slots.every((b) => b.checked);
   }
   function enquiryText() {
+    if (!enq.date) return null;
     const boxes = enqBoxes();
     const full = boxes.find((b) => b.value === 'full');
     const picked = BailsCal.SLOTS.filter((s) => boxes.find((b) => b.value === s.id)?.checked);
@@ -505,14 +575,14 @@
   function updateEnquiry() {
     const msg = enquiryText();
     const go = $('#enqGo');
-    $('#enqMsg').textContent = msg || 'Pick at least one slot.';
+    $('#enqMsg').textContent = msg || (enq.date ? 'Pick at least one slot.' : 'Pick a date, then a slot.');
     $('#enqErr').textContent = '';
     go.classList.toggle('is-disabled', !msg);
     go.href = msg ? `https://wa.me/${siteData.settings.whatsapp}?text=${encodeURIComponent(msg)}` : '#';
   }
   $('#enqOptions').addEventListener('change', (e) => { syncFull(e.target); updateEnquiry(); });
   $('#enqGo').addEventListener('click', (e) => {
-    if (!enquiryText()) { e.preventDefault(); $('#enqErr').textContent = 'Pick at least one slot first.'; return; }
+    if (!enquiryText()) { e.preventDefault(); $('#enqErr').textContent = enq.date ? 'Pick at least one slot first.' : 'Pick a date first.'; return; }
     setTimeout(() => $('#enquiryDialog').close(), 100);
   });
   $('#enquiryDialog').addEventListener('click', (e) => { if (e.target.id === 'enquiryDialog') e.target.close(); });

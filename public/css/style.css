@@ -654,7 +654,7 @@ a.score__meta { color: inherit; }
 
 /* ---------- Hero: 7-day weather at the ground (transparent, under the ratings) ---------- */
 .hero__weather { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
-.hero__weather-label { width: 100%; font-size: .7rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; opacity: .75; }
+.hero__weather-label { display: inline-flex; align-items: center; gap: 8px; width: 100%; font-size: .7rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; opacity: .75; }
 .wx { list-style: none; margin: 0; padding: 0; display: flex; gap: 10px; }
 .wx__day { position: relative; display: grid; justify-items: center; gap: 2px; min-width: 52px; padding: 2px 4px; text-shadow: 0 1px 6px rgba(0, 0, 0, .35); }
 .wx__icon { filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .3)); }
@@ -665,11 +665,11 @@ a.score__meta { color: inherit; }
 .wx__rain { font-size: .66rem; font-weight: 700; color: #9fd4ff; line-height: 1; }
 .hero__content { min-width: 0; }
 .hero__weather, .wx { min-width: 0; max-width: 100%; }
-.wx__more { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: #fff; opacity: .85; text-decoration: underline; text-underline-offset: 3px; }
-.wx__more:hover { opacity: 1; }
-.wx__more svg { width: 14px; height: 14px; }
 @media (max-width: 640px) {
   .wx { width: 100%; overflow-x: auto; scrollbar-width: none; }
   .wx::-webkit-scrollbar { display: none; }
   .wx__day { min-width: 52px; flex: 0 0 auto; }
 }
+.wx__more { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #fff; opacity: .8; transition: opacity .15s, background .15s; }
+.wx__more:hover, .wx__more:focus-visible { opacity: 1; background: rgba(255, 255, 255, .15); }
+.wx__more svg { width: 13px; height: 13px; }

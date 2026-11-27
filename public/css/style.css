@@ -651,3 +651,25 @@ a.score__meta { color: inherit; }
 .enq__legend .is-open { background: #23935a; } .enq__legend .is-some { background: #d9822b; } .enq__legend .is-full { background: #c8372f; }
 .enq__change { justify-self: start; border: 0; background: none; padding: 0; color: var(--green-600); font-weight: 700; font-size: .88rem; text-decoration: underline; cursor: pointer; }
 .enq__chat { justify-self: center; font-size: .85rem; color: var(--muted); text-decoration: underline; }
+
+/* ---------- Hero: 7-day weather at the ground (transparent, under the ratings) ---------- */
+.hero__weather { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.hero__weather-label { width: 100%; font-size: .7rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; opacity: .75; }
+.wx { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
+.wx__day { position: relative; display: grid; justify-items: center; gap: 2px; min-width: 58px; padding: 7px 6px 6px; border-radius: 12px;
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.wx__wd { font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .85; }
+.wx__icon { width: 28px; height: 28px; }
+.wx__t { font-size: .78rem; opacity: .8; white-space: nowrap; }
+.wx__t b { font-size: .9rem; opacity: 1; color: #fff; }
+.wx__rain { font-size: .66rem; font-weight: 700; color: #9fd4ff; line-height: 1; }
+.hero__content { min-width: 0; }
+.hero__weather, .wx { min-width: 0; max-width: 100%; }
+.wx__more { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: #fff; opacity: .85; text-decoration: underline; text-underline-offset: 3px; }
+.wx__more:hover { opacity: 1; }
+.wx__more svg { width: 14px; height: 14px; }
+@media (max-width: 640px) {
+  .wx { width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .wx::-webkit-scrollbar { display: none; }
+  .wx__day { min-width: 52px; flex: 0 0 auto; }
+}

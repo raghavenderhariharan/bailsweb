@@ -133,6 +133,39 @@
     })
     .catch((err) => console.error('Could not load site data', err));
 
+  // ------------------------------------------------------------ weather, next 7 days
+  // WMO weather codes -> icon + words
+  function wxKind(c) {
+    if (c === 0) return ['sun', 'Sunny'];
+    if (c === 1 || c === 2) return ['partly', c === 1 ? 'Mostly sunny' : 'Partly cloudy'];
+    if (c === 3) return ['cloud', 'Cloudy'];
+    if (c === 45 || c === 48) return ['fog', 'Foggy'];
+    if (c >= 51 && c <= 57) return ['drizzle', 'Drizzle'];
+    if ((c >= 61 && c <= 67) || (c >= 80 && c <= 82)) return ['rain', c === 80 ? 'Showers' : 'Rain'];
+    if (c >= 95) return ['storm', 'Thunderstorm'];
+    return ['cloud', 'Cloudy'];
+  }
+  fetch('/api/weather')
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    .then(({ days }) => {
+      if (!days?.length) return;
+      const today = BailsCal.todayIST();
+      $('#wxDays').innerHTML = days.map((d) => {
+        const [icon, words] = wxKind(d.code);
+        const dt = new Date(`${d.date}T12:00:00Z`);
+        const wd = d.date === today ? 'Today' : dt.toLocaleString('en-IN', { weekday: 'short', timeZone: 'UTC' });
+        const rain = `<small class="wx__rain">${d.rain != null && d.rain >= 20 ? `${d.rain}% rain` : '&nbsp;'}</small>`;
+        const tip = `${BailsCal.dayLabel(d.date)}: ${words}, ${d.max}° / ${d.min}°C${d.rain != null ? `, ${d.rain}% chance of rain` : ''}`;
+        return `<li class="wx__day" title="${esc(tip)}" aria-label="${esc(tip)}">
+          <span class="wx__wd">${esc(wd)}</span>
+          <svg class="wx__icon" aria-hidden="true"><use href="#w-${icon}"/></svg>
+          <span class="wx__t"><b>${d.max}°</b> ${d.min}°</span>${rain}
+        </li>`;
+      }).join('');
+      $('#weather').hidden = false;
+    })
+    .catch((err) => console.warn('Weather unavailable', err));
+
   // ------------------------------------------------------------ settings
   function applySettings(s) {
     const wa = s.whatsapp ? `https://wa.me/${s.whatsapp}?text=${encodeURIComponent("Hi BAILS Cricket Ground! I'd like to enquire about booking the ground.")}` : null;

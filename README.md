@@ -28,6 +28,10 @@ The server reads upcoming matches from the ground's public CricHeroes page (grou
 - The ground page lists about the next 10 matches, so the sync sees that far ahead.
 - If Node shows `unable to get local issuer certificate` on a company network, start it with `NODE_OPTIONS=--use-system-ca npm start`. Render doesn't need this.
 
+### Weather
+
+The hero shows a 7-day forecast for the ground from [Open-Meteo](https://open-meteo.com) (free, no API key), via `GET /api/weather`, cached for an hour. Set `GROUND_LAT` / `GROUND_LNG` to move it. The "Full forecast on AccuWeather" link goes to AccuWeather's Keesara page (location 1801580); AccuWeather's own API needs a key and its free tier covers only 5 days.
+
 ## Admin panel (`/admin`)
 
 | Tab | What it manages |

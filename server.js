@@ -352,6 +352,44 @@ app.use((_req, res, next) => {
 
 app.use(express.json({ limit: '200kb' }));
 
+// 7-day weather at the ground (Open-Meteo, free and keyless), cached in memory for an hour
+const GROUND_LAT = Number(process.env.GROUND_LAT) || 17.492275;
+const GROUND_LNG = Number(process.env.GROUND_LNG) || 78.6691421;
+const WEATHER_TTL_MS = 60 * 60 * 1000;
+let weatherCache = null; // { at, body }
+async function fetchWeather() {
+  const url = 'https://api.open-meteo.com/v1/forecast?' + new URLSearchParams({
+    latitude: GROUND_LAT, longitude: GROUND_LNG, timezone: 'Asia/Kolkata', forecast_days: '7',
+    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+  });
+  const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`weather HTTP ${r.status}`);
+  const d = (await r.json()).daily;
+  if (!d || !Array.isArray(d.time)) throw new Error('weather: unexpected response');
+  return {
+    updated: new Date().toISOString(),
+    days: d.time.map((date, i) => ({
+      date,
+      code: d.weather_code[i],
+      max: Math.round(d.temperature_2m_max[i]),
+      min: Math.round(d.temperature_2m_min[i]),
+      rain: d.precipitation_probability_max?.[i] ?? null,
+    })),
+  };
+}
+app.get('/api/weather', async (req, res) => {
+  try {
+    if (!weatherCache || Date.now() - weatherCache.at > WEATHER_TTL_MS) {
+      weatherCache = { at: Date.now(), body: await fetchWeather() };
+    }
+  } catch (err) {
+    console.warn('Weather fetch failed:', err.message);
+    if (!weatherCache) return res.status(502).json({ error: 'Weather unavailable' });
+  }
+  res.set('Cache-Control', 'public, max-age=900');
+  res.json(weatherCache.body);
+});
+
 // Public data for the website
 app.get('/api/public', (req, res) => {
   const byStart = (a, b) => a.start.localeCompare(b.start);
